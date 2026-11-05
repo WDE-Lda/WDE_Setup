@@ -73,11 +73,22 @@ $stage = Join-Path ([IO.Path]::GetTempPath()) ('WDE-launcher-' + [guid]::NewGuid
 New-Item -ItemType Directory -Path $stage | Out-Null
 try {
     Write-Host '==> Downloading GitWorkflow'
-    gh release download --repo gitwde/GitWorkflow --pattern GitWorkflow.zip --dir $stage --clobber
+    gh release download --repo gitwde/GitWorkflow --pattern GitWorkflow.zip --pattern GitWorkflow.zip.sha256 --dir $stage --clobber
     if ($LASTEXITCODE -ne 0) {
         throw 'Unable to download GitWorkflow. Is the signed-in GitHub account a member of the gitwde organization?'
     }
-    Expand-Archive -LiteralPath (Join-Path $stage 'GitWorkflow.zip') -DestinationPath $stage -Force
+    $zip = Join-Path $stage 'GitWorkflow.zip'
+    $checksumFile = "$zip.sha256"
+    if (-not (Test-Path -LiteralPath $checksumFile)) {
+        throw 'The latest GitWorkflow release has no GitWorkflow.zip.sha256, so the download cannot be verified. Publish a GitWorkflow release that includes it and run again.'
+    }
+    # Format: '<hash>  GitWorkflow.zip'
+    $expected = (-split (Get-Content -LiteralPath $checksumFile -Raw)) | Select-Object -First 1
+    $actual = (Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash
+    if ($actual -ne $expected) {
+        throw "GitWorkflow.zip failed the SHA-256 check (expected '$expected', got '$actual')."
+    }
+    Expand-Archive -LiteralPath $zip -DestinationPath $stage -Force
     & (Join-Path $stage 'install.ps1')
     Import-Module GitWorkflow -Force
     Install-Workstation -Extras:$Extras -NoNode:$NoNode -SkipPlugins:$SkipPlugins
