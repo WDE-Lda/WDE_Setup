@@ -10,9 +10,9 @@ asks you to sign in to GitHub in the browser (once), then downloads GitWorkflow 
 installs it and runs 'Install-Workstation', which runs the WDE_AI bootstrap and configures Git.
 
 Run it in PowerShell:
-    irm https://raw.githubusercontent.com/gitwde/WDE_Setup/main/setup.ps1 | iex
+    irm https://raw.githubusercontent.com/WDE-Lda/WDE_Setup/main/setup.ps1 | iex
 With options:
-    & ([scriptblock]::Create((irm https://raw.githubusercontent.com/gitwde/WDE_Setup/main/setup.ps1))) -Extras
+    & ([scriptblock]::Create((irm https://raw.githubusercontent.com/WDE-Lda/WDE_Setup/main/setup.ps1))) -Extras
 
 .PARAMETER Extras
 Also installs ripgrep, jq, ShellCheck and shfmt.
@@ -73,9 +73,9 @@ $stage = Join-Path ([IO.Path]::GetTempPath()) ('WDE-launcher-' + [guid]::NewGuid
 New-Item -ItemType Directory -Path $stage | Out-Null
 try {
     Write-Host '==> Downloading GitWorkflow'
-    gh release download --repo gitwde/GitWorkflow --pattern GitWorkflow.zip --pattern GitWorkflow.zip.sha256 --dir $stage --clobber
+    gh release download --repo WDE-Lda/GitWorkflow --pattern GitWorkflow.zip --pattern GitWorkflow.zip.sha256 --dir $stage --clobber
     if ($LASTEXITCODE -ne 0) {
-        throw 'Unable to download GitWorkflow. Is the signed-in GitHub account a collaborator on gitwde/GitWorkflow?'
+        throw 'Unable to download GitWorkflow. Is the signed-in GitHub account a collaborator on WDE-Lda/GitWorkflow?'
     }
     $zip = Join-Path $stage 'GitWorkflow.zip'
     $checksumFile = "$zip.sha256"
