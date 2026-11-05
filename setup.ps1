@@ -75,7 +75,7 @@ try {
     Write-Host '==> Downloading GitWorkflow'
     gh release download --repo gitwde/GitWorkflow --pattern GitWorkflow.zip --pattern GitWorkflow.zip.sha256 --dir $stage --clobber
     if ($LASTEXITCODE -ne 0) {
-        throw 'Unable to download GitWorkflow. Is the signed-in GitHub account a member of the gitwde organization?'
+        throw 'Unable to download GitWorkflow. Is the signed-in GitHub account a collaborator on gitwde/GitWorkflow?'
     }
     $zip = Join-Path $stage 'GitWorkflow.zip'
     $checksumFile = "$zip.sha256"
