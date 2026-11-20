@@ -9,12 +9,6 @@ BeforeAll {
             $node.Left.Extent.Text -in '$expected', '$actual'
         }, $true) | ForEach-Object { $_.Extent.Text }
     $script:hashCheck = [scriptblock]::Create(($lines -join "`n") + "`n" + '$actual -eq $expected')
-    # The line that decides between 'dotnet nuget update source' and 'add source', given what dotnet lists.
-    $knownLine = $ast.FindAll({
-            param($node)
-            $node -is [System.Management.Automation.Language.AssignmentStatementAst] -and $node.Left.Extent.Text -eq '$known'
-        }, $true) | ForEach-Object { $_.Extent.Text }
-    $script:knownCheck = [scriptblock]::Create('param($sources)' + "`n$knownLine`n" + '[bool]$known')
 
     $zip = Join-Path $TestDrive 'GitWorkflow.zip'
     $script:checksumFile = "$zip.sha256"
@@ -37,18 +31,5 @@ Describe 'setup.ps1 SHA-256 check' {
     It 'rejects an empty checksum file' {
         [IO.File]::WriteAllText($script:checksumFile, '')
         . $script:hashCheck | Should -BeFalse
-    }
-}
-
-Describe 'setup.ps1 NuGet source "wde"' {
-    It 'updates the source when the user config already has it' {
-        $listed = 'Registered Sources:', '  1.  nuget.org [Enabled]', '      https://api.nuget.org/v3/index.json',
-        '  2.  wde [Enabled]', '      https://nuget.pkg.github.com/WDE-Lda/index.json'
-        & $script:knownCheck -sources $listed | Should -BeTrue
-    }
-    It 'adds the source when the user config has only others' {
-        $listed = 'Registered Sources:', '  1.  nuget.org [Enabled]', '      https://api.nuget.org/v3/index.json',
-        '  2.  wde-old [Enabled]', '      https://nuget.pkg.github.com/WDE-Lda/index.json'
-        & $script:knownCheck -sources $listed | Should -BeFalse
     }
 }

@@ -63,33 +63,11 @@ Install-WingetPackage -Command gh -Id GitHub.cli -Name 'GitHub CLI'
 gh auth status *> $null
 if ($LASTEXITCODE -ne 0) {
     Write-Host '==> GitHub sign-in (the WDE repositories are private): follow the steps in the browser'
+    # read:packages: 'task setup' (Install-Workstation, below) gives NuGet this sign-in for the WDE packages.
     gh auth login --hostname github.com --git-protocol https --web --scopes read:packages
     if ($LASTEXITCODE -ne 0) {
         throw 'GitHub sign-in failed.'
     }
-}
-
-# The WDE libraries (Hamr, Mimir, Asgard) are NuGet packages in the GitHub Packages of WDE-Lda, which asks for a
-# sign-in even to read. NuGet gets the GitHub sign-in of this PC (with the read:packages scope) for the source
-# "wde" that the nuget.config of each program names; dotnet stores it encrypted in the user's NuGet.Config.
-if (Get-Command dotnet -ErrorAction SilentlyContinue) {
-    Write-Host '==> NuGet source "wde" (the WDE libraries, from GitHub Packages)'
-    if (-not (gh api user --include | Select-String -Pattern '^X-Oauth-Scopes:.*read:packages' -Quiet)) {
-        Write-Host '    The GitHub sign-in needs the permission to read packages: follow the steps in the browser'
-        gh auth refresh --hostname github.com --scopes read:packages
-    }
-    $userConfig = Join-Path $env:AppData 'NuGet\NuGet.Config'
-    dotnet nuget list source | Out-Null # creates the user's NuGet.Config on a PC where NuGet never ran
-    $sources = dotnet nuget list source --configfile $userConfig
-    $known = @($sources) -match '^\s*\d+\.\s+wde \['
-    $target = if ($known) { @('update', 'source', 'wde') } else { @('add', 'source', 'https://nuget.pkg.github.com/WDE-Lda/index.json', '--name', 'wde') }
-    dotnet nuget @target --username (gh api user --jq .login) --password (gh auth token) --configfile $userConfig
-    if ($LASTEXITCODE -ne 0) {
-        Write-Warning 'The NuGet source "wde" was not configured: programs that use Hamr, Mimir or Asgard will not restore. Run this setup again.'
-    }
-}
-else {
-    Write-Host 'SKIPPED: NuGet source "wde" (no .NET SDK on this PC). Run this setup again after installing it.'
 }
 
 $stage = Join-Path ([IO.Path]::GetTempPath()) ('WDE-launcher-' + [guid]::NewGuid().ToString('N'))
