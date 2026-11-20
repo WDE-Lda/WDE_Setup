@@ -63,7 +63,8 @@ Install-WingetPackage -Command gh -Id GitHub.cli -Name 'GitHub CLI'
 gh auth status *> $null
 if ($LASTEXITCODE -ne 0) {
     Write-Host '==> GitHub sign-in (the WDE repositories are private): follow the steps in the browser'
-    gh auth login --hostname github.com --git-protocol https --web
+    # read:packages: 'task setup' (Install-Workstation, below) gives NuGet this sign-in for the WDE packages.
+    gh auth login --hostname github.com --git-protocol https --web --scopes read:packages
     if ($LASTEXITCODE -ne 0) {
         throw 'GitHub sign-in failed.'
     }

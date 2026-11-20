@@ -10,5 +10,9 @@ irm https://raw.githubusercontent.com/WDE-Lda/WDE_Setup/main/setup.ps1 | iex
 Instala Git e GitHub CLI (winget), pede o login no GitHub, instala o GitWorkflow e corre o `task setup`
 (ferramentas, plugins Claude Code e configuracao do Git).
 
+O login pede tambem a permissao de ler pacotes (`read:packages`): num PC com o .NET SDK, o `task setup` da
+ao NuGet esse login para a fonte `wde` (os pacotes Hamr, Mimir e Asgard do GitHub Packages da WDE-Lda).
+Num PC ja montado nao e preciso este script: basta `task update` e `task setup`.
+
 Como publicar: `task start-dev` / `task open-pr` / `task merge` com o [GitWorkflow](https://github.com/WDE-Lda/GitWorkflow),
 sem Release (quem usa o script corre o `main`).
